@@ -1,0 +1,17 @@
+{ kind: 'youtube#playlistItem',
+  etag: '"p4VTdlkQv3HQeTEaXgvLePAydmU/lBwcYm3PmDCF7c0jJvf9quujp1s"',
+  id: 'VVVBMnRGazJOZHpPektwU0pkZjI0Y0FnLmU0T2lkZTlCc0g4',
+  snippet: { publishedAt: '2020-01-04T16: 05: 16.000Z',
+     channelId: 'UCA2tFk2NdzOzKpSJdf24cAg',
+     title: 'Radix Sort Algorithm | Thuật toán sắp xếp theo cơ số',
+     description:
+      'Hế lô hế lô, Ông dev đây!\n\nTrong phần này mình sẽ giới thiệu và giải thích cơ chế hoạt động của Radix Sort Algorithm -  thuật toán sắp xếp theo cơ số.\n\n--- Để xem những video về lập trình và gaming ---\nNhấn vào đây để theo dõi kênh mình nhé: https: //duyngd.com/Subscribe\n\n--- Blog của mình ---\nhttps://duyngd.com\n\n--- Facebook page của mình ---\nhttps://www.facebook.com/ongdevvuitinh\n\n--- Ủng hộ Ông Dev ---\nhttps://unghotoi.com/ongdev\n\nCảm ơn các bạn đã quan tâm theo dõi\n#ôngdev #algorithm #radixsort',
+     thumbnails: [Object
+    ],
+     channelTitle: 'Ông Dev',
+     playlistId: 'UUA2tFk2NdzOzKpSJdf24cAg',
+     position: 0,
+     resourceId: [Object
+    ]
+  }
+}
