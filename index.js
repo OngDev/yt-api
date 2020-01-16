@@ -42,7 +42,7 @@ app.use(morgan('combined', { stream: accessLogStream }));
 connectDatabase();
 
 // auto update youtube videos
-YoutubeBackgroundTasks.auloUpdateYoutubeVideos.start();
+YoutubeBackgroundTasks.autoUpdateYoutubeVideos.start();
 
 if (!isProduction) {
   // eslint-disable-next-line global-require
