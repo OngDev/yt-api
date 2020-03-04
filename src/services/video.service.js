@@ -13,3 +13,4 @@ VideoService.videoById = async (videoId) => {
     throw Error(error.message);
   }
 };
+export default VideoService;
