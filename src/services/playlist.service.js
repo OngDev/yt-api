@@ -6,7 +6,7 @@ const PlayListService = {};
  * @description insertMany a list playlist
  * @param {PlayList} playlists
  */
-PlayListService.insertPlayList = async (playlists) => {
+PlayListService.insertPlayLists = async (playlists) => {
   if (!playlists || playlists.length === 0) {
     throw Error('Missing "playlists" params');
   }
@@ -31,16 +31,16 @@ PlayListService.deletePlayLists = async (playListIds) => {
   }
   try {
     const bulkDelete = PlayListModel.collection.initializeUnorderedBulkOp();
-    playListIds.forEach(id => {
+    playListIds.forEach((id) => {
       bulkDelete.find({
-        id: id
-      }).updateOne({ $set: { isRemove: 1 } })
+        id,
+      }).updateOne({ $set: { isRemove: 1 } });
     });
-    await bulkDelete.execute()
+    await bulkDelete.execute();
   } catch (error) {
-    throw Error(error.message)
+    throw Error(error.message);
   }
-}
+};
 
 PlayListService.updatePlayLists = async (playLists) => {
   if (!playLists || playLists.length === 0) {
@@ -48,14 +48,14 @@ PlayListService.updatePlayLists = async (playLists) => {
   }
   try {
     const bulkUpdate = PlayListModel.collection.initializeUnorderedBulkOp();
-    playLists.forEach(playList => {
+    playLists.forEach((playList) => {
       bulkUpdate.find({
-        id: playList.id
-      }).updateOne({ $set: playList })
+        id: playList.id,
+      }).updateOne({ $set: playList });
     });
-    await bulkUpdate.execute()
+    await bulkUpdate.execute();
   } catch (error) {
-    throw Error(error.message)
+    throw Error(error.message);
   }
-}
+};
 export default PlayListService;

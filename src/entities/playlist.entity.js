@@ -1,5 +1,7 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-underscore-dangle */
 // constructor pattern
-import isEqual from 'lodash/isEqual'
+import isEqual from 'lodash/isEqual';
 
 function PlayList() {
   /**
@@ -8,14 +10,17 @@ function PlayList() {
    */
   this.convertDataFromYTToModel = (playListYT) => {
     if (!playListYT) return null;
+    const {
+      id, snippet: { title, description, publishedAt }, status: { privacyStatus }, contentDetails: { itemCount },
+    } = playListYT;
     return {
-      id: playListYT.id,
-      title: playListYT.snippet.title || null,
-      description: playListYT.snippet.description || null,
-      status: playListYT.status.privacyStatus || null,
-      videosTotal: playListYT.contentDetails.itemCount || 0,
-      publishedAt: playListYT.snippet.publishedAt || null,
-      isRemove: 0
+      id,
+      title,
+      description,
+      status: privacyStatus,
+      videosTotal: itemCount || 0,
+      publishedAt,
+      isRemove: 0,
     };
   };
 
@@ -27,11 +32,11 @@ function PlayList() {
    */
   this.compare2PlayList = (playListYT, playListDB) => {
     if (!playListDB || !playListDB) return false;
-    delete playListDB._id
-    delete playListDB.__v
-    delete playListDB.publishedAt
-    delete playListYT.publishedAt
-    return isEqual(playListYT, playListDB)
+    delete playListDB._id;
+    delete playListDB.__v;
+    delete playListDB.publishedAt;
+    delete playListYT.publishedAt;
+    return isEqual(playListYT, playListDB);
   };
 
   this.getAttribute = () => ({
@@ -41,7 +46,7 @@ function PlayList() {
     status: 'status',
     videosTotal: 'videosTotal',
     publishedAt: 'publishedAt',
-    isRemove: 'isRemove'
+    isRemove: 'isRemove',
   });
 }
 
