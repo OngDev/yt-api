@@ -1,45 +1,123 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-await-in-loop */
 import cron from 'node-cron';
 import dotenv from 'dotenv';
+import _ from 'lodash';
 
 import YoutubeApi from '../configs/yt.config';
-import VideoModel from '../models/video.model';
+import VideoEntity from '../entities/video.entity';
+import VideoService from '../services/video.service';
+import FetchLogService from '../services/fetchlog.service';
+import { PART, CRONSTATUS } from '../constants';
+import helper from '../utils/helper';
+import logger from '../logger/logger';
+
 
 dotenv.config();
 
-const YoutubeBackgroundTasks = {};
+const YoutubeVideoBackgroundTasks = {};
 
-YoutubeBackgroundTasks.getAllAvailableVideosFromYoutube = async () => {
+const handleVideoFromYoutube = async (nextVersion) => {
   try {
-    const res = await YoutubeApi.playlistItems.list({
-      part: 'snippet',
-      playlistId: process.env.YOUTUBE_UPLOAD_PLAYLIST_ID,
-    });
-    return res.data.items;
+    let opts = {
+      part: `${PART.ID}`,
+      channelId: process.env.YOUTUBE_CHANNEL_ID,
+      maxResults: 50,
+      pageToken: null,
+    };
+    do {
+      opts = _.omitBy(opts, _.isNull);
+      const playLists = await YoutubeApi.playlists.list(opts);
+      if (!playLists) break;
+      opts.pageToken = playLists.data.nextPageToken || null;
+      const arrPlayListId = _.map(playLists.data.items, 'id');
+      // fetch video in a playist
+      await fetchVideosByPlayListId(arrPlayListId, nextVersion);
+    } while (opts.pageToken != null);
+    return [];
   } catch (error) {
     throw Error(error.message);
   }
 };
 
-YoutubeBackgroundTasks
-  .saveAllVideosToDatabase = async (videos) => videos && videos.forEach(async (video) => {
-    const {
-      title, description, thumbnails, position,
-    } = video.snippet;
-    await VideoModel.deleteMany({});
-    const newVideo = new VideoModel({
-      id: video.id,
-      title,
-      description,
-      thumbnails,
-      position,
-    });
-    newVideo.save();
-  });
+const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
+  try {
+    const videoEntity = new VideoEntity();
+    await Promise.all(playListIds.map(async (id) => {
+      let listVideos = [];
+      let opts = {
+        part: PART.SNIPPET,
+        playlistId: id,
+        maxResults: 50,
+        pageToken: null,
+      };
+      do {
+        opts = _.omitBy(opts, _.isNull);
+        const resultPlayList = await YoutubeApi.playlistItems.list(opts);
+
+        const videos = resultPlayList.data.items;
+        videos.forEach((video) => {
+          listVideos.push(videoEntity.convertDataFromYTToModel(video));
+        });
+
+        opts.pageToken = resultPlayList.data.nextPageToken || null;
+      } while (opts.pageToken != null);
+      // tồn tại 2 video trong 1 playlist
+      listVideos = _.uniqBy(listVideos, 'id');
+      // xử lý lưu video
+      await VideoService.upsertVideosPlayList(listVideos, nextVersion);
+    }));
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+const updateLogFetchVideo = async () => {
+  try {
+    const timeNow = helper.getDateNowISOLocal();
+    await FetchLogService.updateLog(timeNow);
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
 
 // Request every 10 mins
-YoutubeBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * *', async () => {
-  const videos = await YoutubeBackgroundTasks.getAllAvailableVideosFromYoutube();
-  await YoutubeBackgroundTasks.saveAllVideosToDatabase(videos);
+YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * * ', async () => {
+  logger.info('start cron-job update videos');
+  const currentVersion = await FetchLogService.getLogVersion();
+  const nextVersion = currentVersion + 1;
+  await handleVideoFromYoutube(nextVersion);
+
+  // fetch statistics
+  const cronStatus = updateStatisticsVideo.getStatus();
+  if (cronStatus !== CRONSTATUS.SCHEDULED && cronStatus !== CRONSTATUS.RUNNING) {
+    updateStatisticsVideo.start();
+  }
+
+  // update log when fetched data
+  await updateLogFetchVideo();
 });
 
-export default YoutubeBackgroundTasks;
+// Request every 5 mins
+const updateStatisticsVideo = cron.schedule('*/5 * * * * ', async () => {
+  logger.info('start cron-job update video statistics');
+  let skip = 0;
+  const limit = 50; // max 50 videoId
+  let videos = await VideoService.getListVideo(skip, limit);
+
+  while (videos && videos.length !== 0) {
+    const arrVideoId = _.map(videos, 'id');
+    const statisticVideos = await YoutubeApi.videos.list({
+      part: PART.STATISTICS,
+      id: arrVideoId,
+    });
+    await VideoService.updateStatisticVideos(statisticVideos.data.items);
+    skip += limit;
+    videos = await VideoService.getListVideo(skip, limit);
+  }
+}, {
+  scheduled: false,
+});
+
+export default YoutubeVideoBackgroundTasks;

@@ -38,7 +38,7 @@ const getAllPlayListFromYoutube = async () => {
 };
 // Request every 30 mins: */30 * * * *
 // request 10s for test: */10 * * * * *
-YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist = cron.schedule('*/30 * * * *', async () => {
+YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist = cron.schedule(' */30 * * * *', async () => {
   try {
     logger.info('Cron-job start');
     const [playListsFromYT, playListsFromDB] = await Promise.all([

@@ -1,4 +1,6 @@
+/* eslint-disable no-param-reassign */
 import VideoModel from '../models/video.model';
+import PlayList from '../entities/playlist.entity';
 
 const VideoService = {};
 
@@ -9,6 +11,89 @@ VideoService.videoById = async (videoId) => {
     }
     const video = await VideoModel.findOne({ id: videoId });
     return video;
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+VideoService.insertVideos = async (videos) => {
+  if (!videos || videos.length === 0) {
+    throw Error('Missing "videos" params');
+  }
+  try {
+    return VideoModel.insertMany(videos);
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+VideoService.upsertVideosPlayList = async (videos, nextVersion) => {
+  if (!videos || videos.length === 0) throw Error('Missing "videos" params');
+  try {
+    // nếu video đã được update, version đang là version hiện tại => push playlistId vào mảng playlist hiện có => 1 video có thể tồn tại trong nhiều playlist.
+    const bulkUpdateVideoUpdated = VideoModel.collection.initializeUnorderedBulkOp();
+    videos.forEach((video) => {
+      bulkUpdateVideoUpdated.find({
+        id: video.id,
+        version: nextVersion,
+      }).updateOne({ $push: { playlists: video.playlists[0] } });
+    });
+
+    // Update những video có version cũ => empty playlist của video và push playlistId hiện tại vào mảng playlist
+    const bulkUpdateCurrentVideos = VideoModel.collection.initializeOrderedBulkOp();
+    videos.forEach((video) => {
+      video.version = nextVersion;
+      bulkUpdateCurrentVideos.find({
+        id: video.id,
+        version: { $lt: nextVersion },
+      }).updateOne({ $set: { playlists: video.playlists, version: nextVersion } });
+    });
+
+    // ưu tiên update video có version mới trước tránh bị trùng lặp playlistId
+    const resultUpdate2 = await bulkUpdateVideoUpdated.execute();
+    const resultUpdate1 = await bulkUpdateCurrentVideos.execute();
+
+    // khi có 1 video mới thêm vào mà không matched với 2 bulkUpdate trên, sẽ thực hiện insert video đó.
+    // với cách này sẽ chỉ insert những video được thêm vào nằm ở vị trí đầu của playlist
+    const totalUpdate = resultUpdate1.nMatched + resultUpdate2.nMatched;
+    if (totalUpdate < videos.length) {
+      const videosInsert = videos.slice(0, videos.length - totalUpdate);
+      await VideoService.insertVideos(videosInsert);
+    }
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+VideoService.getVideosInPlayList = async (playListId) => {
+  if (!playListId) throw Error('Missing "playListId" params');
+  try {
+    return VideoModel.find({ playlists: { $elemMatch: { playlistId: { $eq: playListId } } } });
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+VideoService.getListVideo = async (skip, limit) => {
+  skip = skip ? parseInt(skip, 10) : 0;
+  limit = limit ? parseInt(limit, 10) : 0;
+  try {
+    return VideoModel.find({}).skip(skip).limit(limit).lean();
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+VideoService.updateStatisticVideos = async (videos) => {
+  if (!videos || videos.length === 0) throw Error('Missing "videos" params');
+  try {
+    const bulktUpdateStatistic = VideoModel.collection.initializeOrderedBulkOp();
+    videos.forEach((video) => {
+      bulktUpdateStatistic.find({
+        id: video.id,
+      }).updateOne({ $set: { statistics: video.statistics } });
+    });
+    return bulktUpdateStatistic.execute();
   } catch (error) {
     throw Error(error.message);
   }
