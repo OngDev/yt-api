@@ -36,33 +36,12 @@ const getAllPlayListFromYoutube = async () => {
     throw Error(error.message);
   }
 };
-// Request every 30 mins: */30 * * * *
-// request 10s for test: */10 * * * * *
-YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist = cron.schedule(' */30 * * * *', async () => {
-  try {
-    logger.info('Cron-job start');
-    const [playListsFromYT, playListsFromDB] = await Promise.all([
-      getAllPlayListFromYoutube(),
-      PlayListService.getAllPlayList(),
-    ]);
-    await handlePlayListData(playListsFromYT, playListsFromDB);
-  } catch (error) {
-    logger.error(error.message);
-  }
-});
 
-/**
- * @description process to return 3 list: listDataDelete, listDataInsert, listDataUpdate. Then update to DB.
- * @param {List<PlayListModel>} playListsFromYT
- * @param {List<PlayListModel>} playListsFromDB
- */
-const handlePlayListData = async (playListsFromYT, playListsFromDB) => {
+const handleMapPlayList = (playListsFromYT, playListsFromDB, playListEntity) => {
+  const mapPlayListYT = new Map();
+  const mapPlayListDB = new Map();
+  const keyHash = new Set();
   try {
-    const mapPlayListYT = new Map();
-    const mapPlayListDB = new Map();
-    const keyHash = new Set();
-    const playListEntity = new PlayListEntity();
-
     playListsFromYT.forEach((playList) => {
       const playListConvert = playListEntity.convertDataFromYTToModel(playList);
       mapPlayListYT.set(playListConvert.id, playListConvert);
@@ -73,14 +52,14 @@ const handlePlayListData = async (playListsFromYT, playListsFromDB) => {
       mapPlayListDB.set(playList.id, playList);
       keyHash.add(playList.id);
     });
+    return [mapPlayListYT, mapPlayListDB, keyHash];
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
 
-    if (_.isEmpty(playListsFromDB)) {
-      // insert to DB sort by publishedAt
-      const playListConvertModelSorted = _.sortBy([...mapPlayListYT.values()], [playListEntity.getAttribute().publishedAt]);
-      await PlayListService.insertPlayLists(playListConvertModelSorted);
-      return;
-    }
-
+const getDataChanged = (mapPlayListYT, mapPlayListDB, keyHash, playListEntity) => {
+  try {
     const playListDelete = [];
     const playListInsert = [];
     const playListUpdate = [];
@@ -98,20 +77,57 @@ const handlePlayListData = async (playListsFromYT, playListsFromDB) => {
         playListUpdate.push(playListYoutube);
       }
     }
+    return [playListDelete, playListInsert, playListUpdate];
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+/**
+ * @description process to return 3 list: listDataDelete, listDataInsert, listDataUpdate. Then update to DB.
+ * @param {List<PlayListModel>} playListsFromYT
+ * @param {List<PlayListModel>} playListsFromDB
+ */
+const handlePlayListData = async (playListsFromYT, playListsFromDB) => {
+  const playListEntity = PlayListEntity();
+  try {
+    const [mapPlayListYT, mapPlayListDB, keyHash] = handleMapPlayList(playListsFromYT, playListsFromDB, playListEntity);
+    if (_.isEmpty(playListsFromDB)) {
+      // insert to DB sort by publishedAt
+      const playListConvertModelSorted = _.sortBy([...mapPlayListYT.values()], [playListEntity.getAttribute().publishedAt]);
+      await PlayListService.insertPlayLists(playListConvertModelSorted);
+      return;
+    }
+
+    const [playListDelete, playListInsert, playListUpdate] = getDataChanged(mapPlayListYT, mapPlayListDB, keyHash, playListEntity);
 
     if (!_.isEmpty(playListDelete)) {
       await PlayListService.deletePlayLists(playListDelete);
     }
     if (!_.isEmpty(playListInsert)) {
-      PlayListService.insertPlayList(playListInsert);
+      await PlayListService.insertPlayList(playListInsert);
     }
     if (!_.isEmpty(playListUpdate)) {
-      PlayListService.updatePlayLists(playListUpdate);
+      await PlayListService.updatePlayLists(playListUpdate);
     }
     return;
   } catch (error) {
     throw Error(error.message);
   }
 };
+// Request every 30 mins: */30 * * * *
+// request 10s for test: */10 * * * * *
+YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist = cron.schedule(' */10 * * * * *', async () => {
+  try {
+    logger.info('Cron-job start');
+    const [playListsFromYT, playListsFromDB] = await Promise.all([
+      getAllPlayListFromYoutube(),
+      PlayListService.getAllPlayList(),
+    ]);
+    await handlePlayListData(playListsFromYT, playListsFromDB);
+  } catch (error) {
+    logger.error(error.message);
+  }
+});
 
 export default YoutubePlayListBackgroundTasks;

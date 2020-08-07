@@ -43,7 +43,7 @@ const handleVideoFromYoutube = async (nextVersion) => {
 
 const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
   try {
-    const videoEntity = new VideoEntity();
+    const videoEntity = VideoEntity();
     await Promise.all(playListIds.map(async (id) => {
       let listVideos = [];
       let opts = {
@@ -83,7 +83,7 @@ const updateLogFetchVideo = async () => {
 };
 
 // Request every 10 mins
-YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * * ', async () => {
+YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * *', async () => {
   logger.info('start cron-job update videos');
   const currentVersion = await FetchLogService.getLogVersion();
   const nextVersion = currentVersion + 1;

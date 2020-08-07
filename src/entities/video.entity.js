@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-// constructor pattern
-import isEqual from 'lodash/isEqual';
+// factory pattern
 import getValues from 'lodash/values';
 
 function Video() {
@@ -9,11 +8,12 @@ function Video() {
    *
    * @param {Object} video: video fetched from YT
    */
-  this.convertDataFromYTToModel = (video) => {
+  function convertDataFromYTToModel(video) {
     if (!video) return null;
     const {
       snippet: {
-        title, description, position, thumbnails, resourceId: { videoId }, playlistId,
+        title, description, position, thumbnails, playlistId,
+        resourceId: { videoId },
       }, statistics,
     } = video;
     return {
@@ -26,6 +26,9 @@ function Video() {
       isRemove: 0,
       version: 1,
     };
+  }
+  return {
+    convertDataFromYTToModel,
   };
 }
 
