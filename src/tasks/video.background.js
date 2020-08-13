@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import _ from 'lodash';
 
 import YoutubeApi from '../configs/yt.config';
-import VideoEntity from '../entities/video.entity';
+import videoMapper from '../mappers/video.mapper';
 import VideoService from '../services/video.service';
 import FetchLogService from '../services/fetchlog.service';
 import { PART, CRONSTATUS } from '../constants';
@@ -31,9 +31,9 @@ const handleVideoFromYoutube = async (nextVersion) => {
       const playLists = await YoutubeApi.playlists.list(opts);
       if (!playLists) break;
       opts.pageToken = playLists.data.nextPageToken || null;
-      const arrPlayListId = _.map(playLists.data.items, 'id');
+      const arrPlayListIds = _.map(playLists.data.items, 'id');
       // fetch video in a playist
-      await fetchVideosByPlayListId(arrPlayListId, nextVersion);
+      await fetchVideosByPlayListId(arrPlayListIds, nextVersion);
     } while (opts.pageToken != null);
     return [];
   } catch (error) {
@@ -43,7 +43,6 @@ const handleVideoFromYoutube = async (nextVersion) => {
 
 const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
   try {
-    const videoEntity = VideoEntity();
     await Promise.all(playListIds.map(async (id) => {
       let listVideos = [];
       let opts = {
@@ -58,7 +57,7 @@ const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
 
         const videos = resultPlayList.data.items;
         videos.forEach((video) => {
-          listVideos.push(videoEntity.convertDataFromYTToModel(video));
+          listVideos.push(videoMapper.convertYtDataToModel(video));
         });
 
         opts.pageToken = resultPlayList.data.nextPageToken || null;
@@ -83,7 +82,7 @@ const updateLogFetchVideo = async () => {
 };
 
 // Request every 10 mins
-YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * *', async () => {
+YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * * *', async () => {
   logger.info('start cron-job update videos');
   const currentVersion = await FetchLogService.getLogVersion();
   const nextVersion = currentVersion + 1;
@@ -100,17 +99,17 @@ YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * 
 });
 
 // Request every 5 mins
-const updateStatisticsVideo = cron.schedule('*/5 * * * * ', async () => {
+const updateStatisticsVideo = cron.schedule('*/5 * * * * *', async () => {
   logger.info('start cron-job update video statistics');
   let skip = 0;
   const limit = 50; // max 50 videoId
   let videos = await VideoService.getListVideo(skip, limit);
 
   while (videos && videos.length !== 0) {
-    const arrVideoId = _.map(videos, 'id');
+    const arrVideoIds = _.map(videos, 'id');
     const statisticVideos = await YoutubeApi.videos.list({
       part: PART.STATISTICS,
-      id: arrVideoId,
+      id: arrVideoIds,
     });
     await VideoService.updateStatisticVideos(statisticVideos.data.items);
     skip += limit;

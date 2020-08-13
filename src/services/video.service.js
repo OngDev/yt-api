@@ -1,6 +1,6 @@
+/* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 import VideoModel from '../models/video.model';
-import PlayList from '../entities/playlist.entity';
 
 const VideoService = {};
 
@@ -42,7 +42,8 @@ const updateVideosNextVersion = async (videos, nextVersion) => {
         version: nextVersion,
       }).updateOne({ $push: { playlists: video.playlists[0] } });
     });
-    return bulkUpdateVideoNextVerion;
+    const resultUpdate = await bulkUpdateVideoNextVerion.execute();
+    return resultUpdate;
   } catch (error) {
     throw Error(error.message);
   }
@@ -61,24 +62,19 @@ const updateVideosCurrentVersion = async (videos, nextVersion) => {
         version: { $lt: nextVersion },
       }).updateOne({ $set: { playlists: video.playlists, version: nextVersion } });
     });
-    return bulkUpdateCurrentVideos;
+    const resultUpdate = await bulkUpdateCurrentVideos.execute();
+    return resultUpdate;
   } catch (error) {
     throw Error(error.message);
   }
 };
 
-/**
- *
- * @param {*} videos
- * @param {*} resUpdatedVideosNextVersion result when updated video has version = next version
- * @param {*} resUpdatedVideosCurrentVeriosn result when updated video has version = current version
- */
 const insertVideoAfterUpdate = async (videos, resUpdatedVideosNextVersion, resUpdatedVideosCurrentVeriosn) => {
   try {
     const totalUpdate = resUpdatedVideosNextVersion.nMatched + resUpdatedVideosCurrentVeriosn.nMatched;
     if (totalUpdate < videos.length) {
-      const videosInsert = videos.slice(0, videos.length - totalUpdate);
-      await VideoService.insertVideos(videosInsert);
+      const videosToInsert = videos.slice(0, videos.length - totalUpdate);
+      await VideoService.insertVideos(videosToInsert);
     }
   } catch (error) {
     throw Error(error.message);
@@ -88,14 +84,12 @@ VideoService.upsertVideosPlayList = async (videos, nextVersion) => {
   if (!videos || videos.length === 0) throw Error('Missing "videos" params');
   try {
     // ưu tiên update video có version mới trước tránh bị trùng lặp playlistId
-    const bulkUpdateVideosNextVerion = updateVideosCurrentVersion(videos, nextVersion);
-    const bulkUpdateVideosCurrentVersion = updateVideosCurrentVersion(videos, nextVersion);
-    const resultUpdate2 = await (await bulkUpdateVideosNextVerion).execute();
-    const resultUpdate1 = await (await bulkUpdateVideosCurrentVersion).execute();
+    const resultUpdateVideosNextVerion = await updateVideosNextVersion(videos, nextVersion);
+    const resultUpdateVideosCurrentVersion = await updateVideosCurrentVersion(videos, nextVersion);
 
     // khi có 1 video mới thêm vào mà không matched với 2 bulkUpdate trên, sẽ thực hiện insert video đó.
     // với cách này sẽ chỉ insert những video được thêm vào nằm ở vị trí đầu của playlist
-    await insertVideoAfterUpdate(videos, resultUpdate2, resultUpdate1);
+    await insertVideoAfterUpdate(videos, resultUpdateVideosNextVerion, resultUpdateVideosCurrentVersion);
   } catch (error) {
     throw Error(error.message);
   }
@@ -134,4 +128,5 @@ VideoService.updateStatisticVideos = async (videos) => {
     throw Error(error.message);
   }
 };
+
 export default VideoService;

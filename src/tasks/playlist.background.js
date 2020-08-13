@@ -8,7 +8,7 @@ import _ from 'lodash';
 import YoutubeApi from '../configs/yt.config';
 import logger from '../logger/logger';
 import PlayListService from '../services/playlist.service';
-import PlayListEntity from '../entities/playlist.entity';
+import playListMapper from '../mappers/playlist.mapper';
 import { PART } from '../constants';
 
 dotenv.config();
@@ -37,89 +37,82 @@ const getAllPlayListFromYoutube = async () => {
   }
 };
 
-const handleMapPlayList = (playListsFromYT, playListsFromDB, playListEntity) => {
-  const mapPlayListYT = new Map();
-  const mapPlayListDB = new Map();
-  const keyHash = new Set();
+const handleMapPlayList = (playListsFromYT, playListsFromDB) => {
+  const playListYtMap = new Map();
+  const playListDbMap = new Map();
+  const playListIdSet = new Set();
   try {
-    playListsFromYT.forEach((playList) => {
-      const playListConvert = playListEntity.convertDataFromYTToModel(playList);
-      mapPlayListYT.set(playListConvert.id, playListConvert);
-      keyHash.add(playListConvert.id);
+    playListsFromYT.forEach((playListFromYt) => {
+      const playList = playListMapper.convertYtDataToModel(playListFromYt);
+      playListYtMap.set(playList.id, playList);
+      playListIdSet.add(playList.id);
     });
 
-    playListsFromDB.forEach((playList) => {
-      mapPlayListDB.set(playList.id, playList);
-      keyHash.add(playList.id);
+    playListsFromDB.forEach((playListFromDb) => {
+      playListDbMap.set(playListFromDb.id, playListFromDb);
+      playListIdSet.add(playListFromDb.id);
     });
-    return [mapPlayListYT, mapPlayListDB, keyHash];
+    return { playListYtMap, playListDbMap, playListIdSet };
   } catch (error) {
     throw Error(error.message);
   }
 };
 
-const getDataChanged = (mapPlayListYT, mapPlayListDB, keyHash, playListEntity) => {
+const getDataChanged = (mapPlayListYT, mapPlayListDB, playListIdSet) => {
   try {
-    const playListDelete = [];
-    const playListInsert = [];
-    const playListUpdate = [];
+    const playListsToDelete = [];
+    const playListsToInsert = [];
+    const playListsToUpdate = [];
 
-    for (const playListId of keyHash) {
+    for (const playListId of playListIdSet) {
       const playListYoutube = mapPlayListYT.get(playListId);
       const playListDB = mapPlayListDB.get(playListId);
       if (_.isEmpty(playListYoutube) && !_.isEmpty(playListDB)) {
-        playListDelete.push(playListDB.id);
+        playListsToDelete.push(playListDB.id);
       }
       if (!_.isEmpty(playListYoutube) && _.isEmpty(playListDB)) {
-        playListInsert.push(playListYoutube);
+        playListsToInsert.push(playListYoutube);
       }
-      if (!_.isEmpty(playListYoutube) && !_.isEmpty(playListDB) && !playListEntity.compare2PlayList({ ...playListYoutube }, { ...playListDB })) {
-        playListUpdate.push(playListYoutube);
+      if (!_.isEmpty(playListYoutube) && !_.isEmpty(playListDB) && !playListMapper.compare2PlayList({ ...playListYoutube }, { ...playListDB })) {
+        playListsToUpdate.push(playListYoutube);
       }
     }
-    return [playListDelete, playListInsert, playListUpdate];
+    return { playListsToDelete, playListsToInsert, playListsToUpdate };
   } catch (error) {
     throw Error(error.message);
   }
 };
 
-/**
- * @description process to return 3 list: listDataDelete, listDataInsert, listDataUpdate. Then update to DB.
- * @param {List<PlayListModel>} playListsFromYT
- * @param {List<PlayListModel>} playListsFromDB
- */
 const handlePlayListData = async (playListsFromYT, playListsFromDB) => {
-  const playListEntity = PlayListEntity();
   try {
-    const [mapPlayListYT, mapPlayListDB, keyHash] = handleMapPlayList(playListsFromYT, playListsFromDB, playListEntity);
+    const { playListYtMap, playListDbMap, playListIdSet } = handleMapPlayList(playListsFromYT, playListsFromDB);
     if (_.isEmpty(playListsFromDB)) {
       // insert to DB sort by publishedAt
-      const playListConvertModelSorted = _.sortBy([...mapPlayListYT.values()], [playListEntity.getAttribute().publishedAt]);
-      await PlayListService.insertPlayLists(playListConvertModelSorted);
+      const sortedPlaylistModel = _.sortBy([...playListYtMap.values()], [playListMapper.PlaylistAttributeConstants.publishedAt]);
+      await PlayListService.insertPlayLists(sortedPlaylistModel);
       return;
     }
 
-    const [playListDelete, playListInsert, playListUpdate] = getDataChanged(mapPlayListYT, mapPlayListDB, keyHash, playListEntity);
+    const { playListsToDelete, playListsToInsert, playListsToUpdate } = getDataChanged(playListYtMap, playListDbMap, playListIdSet);
 
-    if (!_.isEmpty(playListDelete)) {
-      await PlayListService.deletePlayLists(playListDelete);
+    if (!_.isEmpty(playListsToDelete)) {
+      await PlayListService.deletePlayLists(playListsToDelete);
     }
-    if (!_.isEmpty(playListInsert)) {
-      await PlayListService.insertPlayList(playListInsert);
+    if (!_.isEmpty(playListsToInsert)) {
+      await PlayListService.insertPlayList(playListsToInsert);
     }
-    if (!_.isEmpty(playListUpdate)) {
-      await PlayListService.updatePlayLists(playListUpdate);
+    if (!_.isEmpty(playListsToUpdate)) {
+      await PlayListService.updatePlayLists(playListsToUpdate);
     }
-    return;
   } catch (error) {
     throw Error(error.message);
   }
 };
 // Request every 30 mins: */30 * * * *
 // request 10s for test: */10 * * * * *
-YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist = cron.schedule(' */10 * * * * *', async () => {
+YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist = cron.schedule('*/30 * * * *', async () => {
   try {
-    logger.info('Cron-job start');
+    logger.info('start cron-job update playlist');
     const [playListsFromYT, playListsFromDB] = await Promise.all([
       getAllPlayListFromYoutube(),
       PlayListService.getAllPlayList(),
