@@ -27,7 +27,6 @@ VideoService.insertVideos = async (videos) => {
   }
 };
 
-
 /**
  * nếu video đã được update, version đang là version hiện tại
  * => push playlistId vào mảng playlist hiện có
@@ -80,6 +79,7 @@ const insertVideoAfterUpdate = async (videos, resUpdatedVideosNextVersion, resUp
     throw Error(error.message);
   }
 };
+
 VideoService.upsertVideosPlayList = async (videos, nextVersion) => {
   if (!videos || videos.length === 0) throw Error('Missing "videos" params');
   try {

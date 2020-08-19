@@ -9,7 +9,7 @@ import YoutubeApi from '../configs/yt.config';
 import videoMapper from '../mappers/video.mapper';
 import VideoService from '../services/video.service';
 import FetchLogService from '../services/fetchlog.service';
-import { PART, CRONSTATUS } from '../constants';
+import { PART, CRON } from '../constants';
 import helper from '../utils/helper';
 import logger from '../logger/logger';
 
@@ -82,7 +82,7 @@ const updateLogFetchVideo = async () => {
 };
 
 // Request every 10 mins
-YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * * *', async () => {
+YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * *', async () => {
   logger.info('start cron-job update videos');
   const currentVersion = await FetchLogService.getLogVersion();
   const nextVersion = currentVersion + 1;
@@ -90,7 +90,7 @@ YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * 
 
   // fetch statistics
   const cronStatus = updateStatisticsVideo.getStatus();
-  if (cronStatus !== CRONSTATUS.SCHEDULED && cronStatus !== CRONSTATUS.RUNNING) {
+  if (cronStatus !== CRON.SCHEDULED && cronStatus !== CRON.RUNNING) {
     updateStatisticsVideo.start();
   }
 
@@ -99,7 +99,7 @@ YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * 
 });
 
 // Request every 5 mins
-const updateStatisticsVideo = cron.schedule('*/5 * * * * *', async () => {
+const updateStatisticsVideo = cron.schedule('*/5 * * * *', async () => {
   logger.info('start cron-job update video statistics');
   let skip = 0;
   const limit = 50; // max 50 videoId

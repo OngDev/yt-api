@@ -37,14 +37,4 @@ PlayListMapper.compare2PlayList = (ytPlayList, dbPlayList) => {
   return isEqual(ytPlayList, dbPlayList);
 };
 
-PlayListMapper.PlaylistAttributeConstants = {
-  id: 'id',
-  title: 'title',
-  description: 'description',
-  status: 'status',
-  videosTotal: 'videosTotal',
-  publishedAt: 'publishedAt',
-  isRemove: 'isRemove',
-};
-
 export default PlayListMapper;

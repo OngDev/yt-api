@@ -1,19 +1,9 @@
-/**
- * part parameter when fetch data from YT
- */
-exports.PART = {
-  SNIPPET: 'snippet',
-  CONTENTDETAILS: 'contentDetails',
-  PLAYER: 'player',
-  STATUS: 'status',
-  ID: 'id',
-  STATISTICS: 'statistics',
-};
+const PLAYLIST = require('./playlist.constant');
+const PART = require('./part.constant');
+const CRON = require('./cron.constant');
 
-exports.CRONSTATUS = {
-  SCHEDULED: 'scheduled',
-  RUNNING: 'running',
-  STOPED: 'stoped',
-  DESTROYED: 'destroyed',
-  FAILED: 'failed',
+module.exports = {
+  PLAYLIST,
+  PART,
+  CRON,
 };
