@@ -30,16 +30,21 @@ jobs:
         cache-name: cache-node-modules
       with:
         path: node_modules
-        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
+        key: v1-npm-deps-${{ hashFiles('**/package.json') }}
         restore-keys: v1-npm-deps-
 
     # Runs a set of commands using the runners shell
     - name: install dependencies
       run: npm install
     
-    - name: build and test
-      run: |
-        npm run eslint:unix
-        npm run test
-        npm run coverage
-        npm run build
+    - name: run eslint
+      run: npm run eslint:unix
+    
+    - name: run test
+      run: npm run test
+    
+    - name: run coverage
+      run: npm run coverage
+    
+    - name: run build
+      run: npm run build
