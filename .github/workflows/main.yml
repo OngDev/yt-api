@@ -22,10 +22,24 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
+    
+    # caching
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: node_modules
+        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: v1-npm-deps-
 
     # Runs a set of commands using the runners shell
+    - name: install dependencies
+      run: npm install
+    
     - name: build and test
       run: |
-        npm install
-        npm run build
+        npm run eslint:unix
         npm run test
+        npm run coverage
+        npm run build
