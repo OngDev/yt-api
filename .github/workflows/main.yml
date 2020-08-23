@@ -38,13 +38,17 @@ jobs:
       run: npm install
     
     - name: run eslint
+      if: ${{ always() }}
       run: npm run eslint:unix
     
     - name: run test
+      if: ${{ always() }}
       run: npm run test
     
     - name: run coverage
+      if: ${{ always() }}
       run: npm run coverage
     
     - name: run build
+      if: ${{ always() }}
       run: npm run build
