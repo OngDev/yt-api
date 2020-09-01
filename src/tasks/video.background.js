@@ -9,7 +9,7 @@ import YoutubeApi from '../configs/yt.config';
 import videoMapper from '../mappers/video.mapper';
 import VideoService from '../services/video.service';
 import FetchLogService from '../services/fetchlog.service';
-import { PART, CRON } from '../constants';
+import { PART, CRON_STATUS } from '../constants';
 import helper from '../utils/helper';
 import logger from '../logger/logger';
 
@@ -90,7 +90,7 @@ YoutubeVideoBackgroundTasks.autoUpdateYoutubeVideos = cron.schedule('*/10 * * * 
 
   // fetch statistics
   const cronStatus = updateStatisticsVideo.getStatus();
-  if (cronStatus !== CRON.SCHEDULED && cronStatus !== CRON.RUNNING) {
+  if (cronStatus !== CRON_STATUS.SCHEDULED && cronStatus !== CRON_STATUS.RUNNING) {
     updateStatisticsVideo.start();
   }
 

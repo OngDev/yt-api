@@ -1,9 +1,9 @@
 const PLAYLIST = require('./playlist.constant');
 const PART = require('./part.constant');
-const CRON = require('./cron.constant');
+const CRON_STATUS = require('./cron.constant');
 
 module.exports = {
   PLAYLIST,
   PART,
-  CRON,
+  CRON_STATUS,
 };
