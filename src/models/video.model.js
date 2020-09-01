@@ -12,21 +12,25 @@ const VideoSchema = Schema({
   title: String,
   description: String,
   statistics: {
-    viewCount: Number,
-    likeCount: Number,
-    dislikeCount: Number,
-    commentCount: Number,
+    viewCount: { type: Number, default: 0 },
+    likeCount: { type: Number, default: 0 },
+    dislikeCount: { type: Number, default: 0 },
+    commentCount: { type: Number, default: 0 },
   },
   thumbnails: [{
     url: String,
     width: Number,
     height: Number,
   }],
-  position: {
+  position: Number,
+  playlists: [{
+    playlistId: { type: String, ref: 'PlaylistModel' },
+    position: Number,
+  }],
+  version: {
     type: Number,
-    unique: true,
+    default: 1,
   },
-  playlists: [{ type: String, ref: 'PlaylistModel' }],
 });
 
 const VideoModel = mongoose.model('Videos', VideoSchema, 'videos');

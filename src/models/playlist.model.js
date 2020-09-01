@@ -13,8 +13,21 @@ const PlaylistSchema = Schema({
   description: {
     type: String,
   },
+  status: {
+    type: String,
+  },
+  videosTotal: {
+    type: Number,
+  },
+  publishedAt: {
+    type: Date,
+  },
+  isRemove: {
+    type: Number,
+    default: 0,
+  },
 
-}, { _id: false });
+}, { _id: false, versionKey: false });
 
 const PlaylistModel = mongoose.model('Playlists', PlaylistSchema, 'playlists');
 
