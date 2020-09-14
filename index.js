@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import logger from './src/logger/logger';
 import connectDatabase from './src/configs/db.config';
 import YoutubeBackgroundTasks from './src/tasks/video.background';
+import YoutubePlayListBackgroundTasks from './src/tasks/playlist.background';
 
 /* istanbul ignore next */
 dotenv.config();
@@ -42,7 +43,8 @@ app.use(morgan('combined', { stream: accessLogStream }));
 connectDatabase();
 
 // auto update youtube videos
-YoutubeBackgroundTasks.auloUpdateYoutubeVideos.start();
+YoutubeBackgroundTasks.autoUpdateYoutubeVideos.start();
+YoutubePlayListBackgroundTasks.autoUpdateYoutubePlaylist.start();
 
 if (!isProduction) {
   // eslint-disable-next-line global-require

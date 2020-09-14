@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+// eslint-disable-next-line no-unused-vars
 import PlaylistModel from './playlist.model';
 
 const { Schema } = mongoose;
@@ -10,31 +11,27 @@ const VideoSchema = Schema({
   },
   title: String,
   description: String,
-  tags: [
-    {
-      type: String,
-    },
-  ],
-  status: {
-    privacyStatus: String,
-    publishAt: Date,
-  },
   statistics: {
-    viewCount: Number,
-    likeCount: Number,
-    dislikeCount: Number,
-    commentCount: Number,
+    viewCount: { type: Number, default: 0 },
+    likeCount: { type: Number, default: 0 },
+    dislikeCount: { type: Number, default: 0 },
+    commentCount: { type: Number, default: 0 },
   },
-  thumbnails: {
+  thumbnails: [{
     url: String,
     width: Number,
     height: Number,
+  }],
+  position: Number,
+  playlists: [{
+    playlistId: { type: String, ref: 'PlaylistModel' },
+    position: Number,
+  }],
+  version: {
+    type: Number,
+    default: 1,
   },
-  comments: [
-    // Do not work on it for now
-  ],
-  playlists: [{ type: PlaylistModel.id, ref: 'PlaylistModel' }],
-}, { _id: false });
+});
 
 const VideoModel = mongoose.model('Videos', VideoSchema, 'videos');
 
