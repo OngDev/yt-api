@@ -37,7 +37,7 @@ const accessLogStream = rfs('access.log', {
 });
 
 // adding morgan to log HTTP requests
-app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan('dev', { stream: accessLogStream }));
 
 // connect to mongo
 connectDatabase();

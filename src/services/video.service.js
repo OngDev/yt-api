@@ -129,4 +129,12 @@ VideoService.updateStatisticVideos = async (videos) => {
   }
 };
 
+VideoService.getMostViewVideos = async (videoNumber) => {
+  try {
+    return [];
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
 export default VideoService;

@@ -11,4 +11,15 @@ VideoController.videoById = async (req, res) => {
   }
 };
 
+VideoController.getMostViewVideos = async (req, res) => {
+  let { videoNumber } = req.params;
+  try {
+    videoNumber = parseInt(videoNumber, 10) || 3; // default = 3
+    const videos = await VideoService.getMostViewVideos(videoNumber);
+    return res.status(200).json({ status: 200, data: videos });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: error.message });
+  }
+};
+
 export default VideoController;
