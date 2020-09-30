@@ -129,9 +129,9 @@ VideoService.updateStatisticVideos = async (videos) => {
   }
 };
 
-VideoService.getMostViewVideos = async (videoNumber) => {
+VideoService.getMostViewVideos = async () => {
   try {
-    return [];
+    // TODO
   } catch (error) {
     throw Error(error.message);
   }
