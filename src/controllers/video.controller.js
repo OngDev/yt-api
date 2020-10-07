@@ -3,8 +3,9 @@ import VideoService from '../services/video.service';
 const VideoController = {};
 
 VideoController.videoById = async (req, res) => {
+  const { videoId } = req.query;
   try {
-    const video = await VideoService.videoById(req.params.videoId);
+    const video = await VideoService.videoById(videoId);
     return res.status(200).json({ status: 200, data: video });
   } catch (error) {
     return res.status(400).json({ status: 400, message: error.message });
@@ -12,7 +13,7 @@ VideoController.videoById = async (req, res) => {
 };
 
 VideoController.getMostViewVideos = async (req, res) => {
-  let { videoNumber } = req.params;
+  let { videoNumber } = req.query;
   try {
     videoNumber = parseInt(videoNumber, 10) || 3; // default = 3
     const videos = await VideoService.getMostViewVideos(videoNumber);
