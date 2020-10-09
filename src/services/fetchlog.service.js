@@ -4,7 +4,9 @@ const FetchLogService = {};
 
 FetchLogService.updateLog = async (timeNow) => {
   try {
-    return FetchLogModel.updateOne({ id: 1 }, { time: timeNow, $inc: { version: 1 } }, { upsert: true });
+    return FetchLogModel.updateOne({ id: 1 },
+      { time: timeNow, $inc: { version: 1 } },
+      { upsert: true });
   } catch (error) {
     throw Error(error.message);
   }
