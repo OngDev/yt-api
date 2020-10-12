@@ -8,7 +8,7 @@ VideoMapper.convertYtDataToModel = (ytVideo) => {
   if (!ytVideo) return null;
   const {
     snippet: {
-      title, description, position, thumbnails, playlistId,
+      title, description, position, thumbnails, playlistId, publishedAt,
       resourceId: { videoId },
     }, statistics,
   } = ytVideo;
@@ -17,6 +17,7 @@ VideoMapper.convertYtDataToModel = (ytVideo) => {
     title,
     description,
     statistics,
+    publishedAt,
     thumbnails: getValues(thumbnails),
     playlists: [{ playlistId, position }],
     isRemove: 0,

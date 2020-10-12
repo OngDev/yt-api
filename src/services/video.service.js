@@ -138,4 +138,16 @@ VideoService.getMostViewVideos = async () => {
   }
 };
 
+VideoService.getMostViewVideos = async (videoNumber) => {
+  if (!videoNumber) throw Error('Missing "videoNumber" params');
+  try {
+    return VideoModel.find({})
+      .sort({ 'statistics.viewCount': -1 })
+      .limit(videoNumber)
+      .lean();
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
 export default VideoService;

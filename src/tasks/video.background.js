@@ -64,6 +64,7 @@ const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
       } while (opts.pageToken != null);
       // tồn tại 2 video trong 1 playlist
       listVideos = _.uniqBy(listVideos, 'id');
+      listVideos = _.orderBy(listVideos, ['publishedAt'], ['desc']);
       // xử lý lưu video
       await VideoService.upsertVideosPlayList(listVideos, nextVersion);
     }));
