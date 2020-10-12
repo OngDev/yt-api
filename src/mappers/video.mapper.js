@@ -12,6 +12,7 @@ VideoMapper.convertYtDataToModel = (ytVideo) => {
       resourceId: { videoId },
     }, statistics,
   } = ytVideo;
+
   return {
     id: videoId,
     title,
