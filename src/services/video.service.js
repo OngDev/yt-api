@@ -129,15 +129,6 @@ VideoService.updateStatisticVideos = async (videos) => {
   }
 };
 
-VideoService.getMostViewVideos = async () => {
-  try {
-    // TODO
-    return [];
-  } catch (error) {
-    throw Error(error.message);
-  }
-};
-
 VideoService.getMostViewVideos = async (videoNumber) => {
   if (!videoNumber) throw Error('Missing "videoNumber" params');
   try {
