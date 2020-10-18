@@ -1,5 +1,4 @@
 /* eslint-disable no-underscore-dangle */
-import httpMocks from 'node-mocks-http';
 import { assert, expect } from 'chai';
 import mongoose from 'mongoose';
 import VideoService from '../services/video.service';
