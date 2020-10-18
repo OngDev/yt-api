@@ -119,9 +119,18 @@ VideoService.updateStatisticVideos = async (videos) => {
   try {
     const bulktUpdateStatistic = VideoModel.collection.initializeOrderedBulkOp();
     videos.forEach((video) => {
+      const {
+        viewCount, likeCount, dislikeCount, commentCount,
+      } = video.statistics;
+      const statistics = {
+        viewCount: parseInt(viewCount, 10),
+        likeCount: parseInt(likeCount, 10),
+        dislikeCount: parseInt(dislikeCount, 10),
+        commentCount: parseInt(commentCount, 10),
+      };
       bulktUpdateStatistic.find({
         id: video.id,
-      }).updateOne({ $set: { statistics: video.statistics } });
+      }).updateOne({ $set: { statistics } });
     });
     return bulktUpdateStatistic.execute();
   } catch (error) {
@@ -129,10 +138,13 @@ VideoService.updateStatisticVideos = async (videos) => {
   }
 };
 
-VideoService.getMostViewVideos = async () => {
+VideoService.getMostViewVideos = async (videoNumber) => {
+  if (!videoNumber) throw Error('Missing "videoNumber" params');
   try {
-    // TODO
-    return [];
+    return VideoModel.find({})
+      .sort({ 'statistics.viewCount': -1 })
+      .limit(videoNumber)
+      .lean();
   } catch (error) {
     throw Error(error.message);
   }

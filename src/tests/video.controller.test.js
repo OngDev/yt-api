@@ -2,8 +2,6 @@
 import httpMocks from 'node-mocks-http';
 import { assert, expect } from 'chai';
 import mongoose from 'mongoose';
-import path from 'path';
-import dotenv from 'dotenv';
 import VideoController from '../controllers/video.controller';
 import logger from '../logger/logger';
 
