@@ -2,6 +2,7 @@
 import httpMocks from 'node-mocks-http';
 import { assert, expect } from 'chai';
 import mongoose from 'mongoose';
+import _ from 'lodash';
 import VideoController from '../controllers/video.controller';
 import logger from '../logger/logger';
 
@@ -63,6 +64,32 @@ describe('test Video controller', () => {
       const result = JSON.parse(res._getData());
       assert.typeOf(result, 'object');
       expect(result).to.have.property('data').with.lengthOf.at.most(videoNumber);
+    });
+  });
+
+  describe('test api get videos by playlist id', () => {
+    it('Shound return videos in play list', async () => {
+      const playListId = 'PLoaAbmGPgTSP5ga7mtzC1EY8Ca8RRzH2C';
+      req.query = { playListId };
+      await VideoController.getVideosByPlayListId(req, res);
+      const result = JSON.parse(res._getData());
+      const videos = result.data;
+      const playLists = _.flatMap(videos, 'playlists');
+      const playListIdResult = _.filter(playLists, ['playlistId', playListId]);
+      assert.typeOf(result, 'object');
+      assert.typeOf(playLists, 'array');
+      expect(result).to.have.property('data').to.have.lengthOf.above(5);
+      expect(videos.length).to.equal(playListIdResult.length);
+    });
+
+    it('Should throw Error missing playListId param ', async () => {
+      const playListId = null;
+      req.query = { playListId };
+      try {
+        await VideoController.getVideosByPlayListId(req, res);
+      } catch (error) {
+        expect(error.message).to.equal('Missing "playListId" params');
+      }
     });
   });
 });

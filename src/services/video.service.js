@@ -150,4 +150,6 @@ VideoService.getMostViewVideos = async (videoNumber) => {
   }
 };
 
+VideoService.getVideosInPlayList;
+
 export default VideoService;
