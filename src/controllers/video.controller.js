@@ -1,4 +1,5 @@
 import VideoService from '../services/video.service';
+import VideoDTO from '../dtos/video.dto';
 
 const VideoController = {};
 
@@ -24,11 +25,25 @@ VideoController.getMostViewVideos = async (req, res) => {
 };
 
 VideoController.getVideosByPlayListId = async (req, res) => {
-  const { playlistid } = req.query;
+  const playlistid = req.query.id;
   if (!playlistid) throw Error('Missing "playlistid" params');
   try {
     const videos = await VideoService.getVideosInPlayList(playlistid);
-    return res.status(200).json({ status: 200, data: videos });
+    const videosDTO = VideoDTO.dtoListVideo(videos);
+    return res.status(200).json({ status: 200, data: videosDTO });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: error.message });
+  }
+};
+
+VideoController.getVideos = async (req, res) => {
+  let { skip, limit } = req.query;
+  try {
+    skip = parseInt(skip, 10) || 0;
+    limit = parseInt(limit, 10) || 10;
+    const videos = await VideoService.getVideos(skip, limit);
+    const videosDTO = VideoDTO.dtoListVideo(videos);
+    return res.status(200).json({ status: 200, data: videosDTO });
   } catch (error) {
     return res.status(500).json({ status: 500, message: error.message });
   }

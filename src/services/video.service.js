@@ -150,4 +150,16 @@ VideoService.getMostViewVideos = async (videoNumber) => {
   }
 };
 
+VideoService.getVideos = async (skip, limt) => {
+  try {
+    return VideoModel.find({})
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limt)
+      .lean();
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
 export default VideoService;
