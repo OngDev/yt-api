@@ -1,3 +1,5 @@
+import VideoConst from '../constants/video.constant';
+
 const VideoDTO = {};
 
 VideoDTO.dtoVideo = (video) => {
@@ -22,7 +24,7 @@ VideoDTO.dtoVideoDetail = (video) => {
     statistics: video.statistic,
     title: video.title,
     description: video.description,
-    thumbnails: video.thumbnails,
+    url: VideoConst.URL_PREFIX + video.id,
   };
 };
 
