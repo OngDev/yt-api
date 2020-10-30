@@ -9,7 +9,7 @@ import YoutubeApi from '../configs/yt.config';
 import logger from '../logger/logger';
 import PlayListService from '../services/playlist.service';
 import playListMapper from '../mappers/playlist.mapper';
-import { PART } from '../constants';
+import { PART, PLAYLIST } from '../constants';
 
 dotenv.config();
 
@@ -88,7 +88,7 @@ const handlePlayListData = async (playListsFromYT, playListsFromDB) => {
     const { playListYtMap, playListDbMap, playListIdSet } = handleMapPlayList(playListsFromYT, playListsFromDB);
     if (_.isEmpty(playListsFromDB)) {
       // insert to DB sort by publishedAt
-      const sortedPlaylistModel = _.sortBy([...playListYtMap.values()], [playListMapper.PlaylistAttributeConstants.publishedAt]);
+      const sortedPlaylistModel = _.sortBy([...playListYtMap.values()], [PLAYLIST.publishedAt]);
       await PlayListService.insertPlayLists(sortedPlaylistModel);
       return;
     }
