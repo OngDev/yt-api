@@ -3,7 +3,7 @@ import VideoService from '../services/video.service';
 const VideoController = {};
 
 VideoController.videoById = async (req, res) => {
-  const { videoId } = req.query;
+  const videoId = req.params.id;
   try {
     const video = await VideoService.videoById(videoId);
     return res.status(200).json({ status: 200, data: video });

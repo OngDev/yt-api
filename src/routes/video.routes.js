@@ -3,8 +3,8 @@ import VideoController from '../controllers/video.controller';
 
 const router = express.Router();
 
-router.get('/getVideo', (req, res) => VideoController.videoById(req, res));
-router.get('/getMostViewVideos', (req, res) => VideoController.getMostViewVideos(req, res));
-router.get('/getVideosInPlayList', (req, res) => VideoController.getVideosByPlayListId(req, res));
+router.get('/videos/:id', (req, res) => VideoController.videoById(req, res));
+router.get('/videos/topview', (req, res) => VideoController.getMostViewVideos(req, res));
+router.get('/videos/playlist', (req, res) => VideoController.getVideosByPlayListId(req, res));
 
 export default router;
