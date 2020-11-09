@@ -24,10 +24,10 @@ VideoController.getMostViewVideos = async (req, res) => {
 };
 
 VideoController.getVideosByPlayListId = async (req, res) => {
-  const { playListId } = req.query;
-  if (!playListId) throw Error('Missing "playListId" params');
+  const { playlistid } = req.query;
+  if (!playlistid) throw Error('Missing "playlistid" params');
   try {
-    const videos = await VideoService.getVideosInPlayList(playListId);
+    const videos = await VideoService.getVideosInPlayList(playlistid);
     return res.status(200).json({ status: 200, data: videos });
   } catch (error) {
     return res.status(500).json({ status: 500, message: error.message });
