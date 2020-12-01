@@ -24,25 +24,19 @@ VideoController.getMostViewVideos = async (req, res) => {
   }
 };
 
-VideoController.getVideosByPlayListId = async (req, res) => {
-  const playlistid = req.query.id;
-  if (!playlistid) throw Error('Missing "playlistid" params');
-  try {
-    const videos = await VideoService.getVideosInPlayList(playlistid);
-    const videosDTO = VideoDTO.dtoListVideo(videos);
-    return res.status(200).json({ status: 200, data: videosDTO });
-  } catch (error) {
-    return res.status(500).json({ status: 500, message: error.message });
-  }
-};
 
 VideoController.getVideos = async (req, res) => {
-  let { skip, limit } = req.query;
+  let { skip, limit, playlistid } = req.query;
   try {
     skip = parseInt(skip, 10) || 0;
     limit = parseInt(limit, 10) || 10;
-    const videos = await VideoService.getVideos(skip, limit);
-    const videosDTO = VideoDTO.dtoListVideo(videos);
+    let videos = {};
+    if (playlistid) {
+      videos = await VideoService.getVideosInPlayList(playlistid, skip, limit);
+    } else {
+      videos = await VideoService.getVideos(skip, limit);
+    }
+    const videosDTO = VideoDTO.toVideoDtoList(videos);
     return res.status(200).json({ status: 200, data: videosDTO });
   } catch (error) {
     return res.status(500).json({ status: 500, message: error.message });

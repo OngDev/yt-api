@@ -1,8 +1,8 @@
-import VideoConst from '../constants/video.constant';
+import VideoMapper from '../mappers/video.mapper';
 
 const VideoDTO = {};
 
-VideoDTO.dtoVideo = (video) => {
+VideoDTO.toVideo = (video) => {
   if (!video) return null;
   return {
     id: video.id,
@@ -12,19 +12,19 @@ VideoDTO.dtoVideo = (video) => {
   };
 };
 
-VideoDTO.dtoListVideo = (videos) => {
+VideoDTO.toVideoDtoList = (videos) => {
   if (!videos) return [];
-  return videos.map((video) => VideoDTO.dtoVideo(video));
+  return videos.map((video) => VideoDTO.toVideo(video));
 };
 
-VideoDTO.dtoVideoDetail = (video) => {
+VideoDTO.toVideoDtoDetail = (video) => {
   if (!video) return null;
   return {
     id: video.id,
     statistics: video.statistic,
     title: video.title,
     description: video.description,
-    url: VideoConst.URL_PREFIX + video.id,
+    url: VideoMapper.urlPrefix + video.id,
   };
 };
 

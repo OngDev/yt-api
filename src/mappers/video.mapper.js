@@ -26,4 +26,6 @@ VideoMapper.convertYtDataToModel = (ytVideo) => {
   };
 };
 
+VideoMapper.urlPrefix = 'https://www.youtube.com/watch?v=';
+
 export default VideoMapper;
