@@ -26,13 +26,14 @@ VideoController.getMostViewVideos = async (req, res) => {
 
 
 VideoController.getVideos = async (req, res) => {
-  let { skip, limit, playlistid } = req.query;
+  const { playlistId } = req.query;
+  let { skip, limit } = req.query;
   try {
     skip = parseInt(skip, 10) || 0;
     limit = parseInt(limit, 10) || 10;
     let videos = {};
-    if (playlistid) {
-      videos = await VideoService.getVideosInPlayList(playlistid, skip, limit);
+    if (playlistId) {
+      videos = await VideoService.getVideosInPlayList(playlistId, skip, limit);
     } else {
       videos = await VideoService.getVideos(skip, limit);
     }
