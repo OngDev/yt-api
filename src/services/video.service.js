@@ -95,10 +95,12 @@ VideoService.upsertVideosPlayList = async (videos, nextVersion) => {
   }
 };
 
-VideoService.getVideosInPlayList = async (playListId) => {
+VideoService.getVideosInPlayList = async (playListId, skip, limit) => {
   if (!playListId) throw Error('Missing "playListId" params');
   try {
-    return VideoModel.find({ playlists: { $elemMatch: { playlistId: { $eq: playListId } } } });
+    return VideoModel.find({ playlists: { $elemMatch: { playlistId: { $eq: playListId } } } })
+      .skip(skip)
+      .limit(limit);
   } catch (error) {
     throw Error(error.message);
   }
@@ -144,6 +146,18 @@ VideoService.getMostViewVideos = async (videoNumber) => {
     return VideoModel.find({})
       .sort({ 'statistics.viewCount': -1 })
       .limit(videoNumber)
+      .lean();
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+
+VideoService.getVideos = async (skip, limit) => {
+  try {
+    return VideoModel.find({})
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean();
   } catch (error) {
     throw Error(error.message);
