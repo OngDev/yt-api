@@ -6,11 +6,14 @@ import morgan from 'morgan';
 import { join } from 'path';
 import rfs from 'rotating-file-stream';
 import dotenv from 'dotenv';
+
 import logger from './src/logger/logger';
 import connectDatabase from './src/configs/db.config';
 import YoutubeBackgroundTasks from './src/tasks/video.background';
 import YoutubePlayListBackgroundTasks from './src/tasks/playlist.background';
+import keycloak from './src/configs/keycloak.config';
 
+// const keycloak = Keycloak();
 /* istanbul ignore next */
 dotenv.config();
 
@@ -20,6 +23,9 @@ const port = process.env.PORT || 3000;
 
 // defining the Express app
 const app = express();
+
+// adding Keycloak
+app.use(keycloak.middleware());
 
 // adding Helmet to enhance your API's security
 app.use(helmet());
@@ -39,6 +45,7 @@ const accessLogStream = rfs('access.log', {
 // adding morgan to log HTTP requests
 app.use(morgan('dev', { stream: accessLogStream }));
 
+
 // connect to mongo
 connectDatabase();
 
@@ -55,6 +62,7 @@ app.get('/', (req, res) => {
   logger.info('GET /');
   res.send('App works!!!!!');
 });
+
 
 app.use('/api', require('./src/routes/routes').default);
 
