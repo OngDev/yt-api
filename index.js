@@ -13,7 +13,6 @@ import YoutubeBackgroundTasks from './src/tasks/video.background';
 import YoutubePlayListBackgroundTasks from './src/tasks/playlist.background';
 import keycloak from './src/configs/keycloak.config';
 
-// const keycloak = Keycloak();
 /* istanbul ignore next */
 dotenv.config();
 
@@ -45,7 +44,6 @@ const accessLogStream = rfs('access.log', {
 // adding morgan to log HTTP requests
 app.use(morgan('dev', { stream: accessLogStream }));
 
-
 // connect to mongo
 connectDatabase();
 
@@ -62,7 +60,6 @@ app.get('/', (req, res) => {
   logger.info('GET /');
   res.send('App works!!!!!');
 });
-
 
 app.use('/api', require('./src/routes/routes').default);
 
