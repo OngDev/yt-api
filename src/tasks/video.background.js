@@ -46,7 +46,7 @@ const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
     await Promise.all(playListIds.map(async (id) => {
       let listVideos = [];
       let opts = {
-        part: PART.SNIPPET,
+        part: `${PART.SNIPPET}, ${PART.STATUS}`,
         playlistId: id,
         maxResults: 50,
         pageToken: null,
@@ -57,7 +57,9 @@ const fetchVideosByPlayListId = async (playListIds, nextVersion) => {
 
         const videos = resultPlayList.data.items;
         videos.forEach((video) => {
-          listVideos.push(videoMapper.convertYtDataToModel(video));
+          if (video.status && video.status.privacyStatus !== 'private') {
+            listVideos.push(videoMapper.convertYtDataToModel(video));
+          }
         });
 
         opts.pageToken = resultPlayList.data.nextPageToken || null;

@@ -1,3 +1,4 @@
+import moment from 'moment';
 import VideoMapper from '../mappers/video.mapper';
 
 const VideoDTO = {};
@@ -9,6 +10,7 @@ VideoDTO.toVideo = (video) => {
     viewCount: video.statistics.viewCount,
     title: video.title,
     thumbnails: video.thumbnails,
+    publishedAt: moment(video.publishedAt).format('DD/MM/YYYY'),
   };
 };
 
