@@ -23,6 +23,7 @@ const VideoSchema = Schema({
     height: Number,
   }],
   position: Number,
+  publishedAt: Date,
   playlists: [{
     playlistId: { type: String, ref: 'PlaylistModel' },
     position: Number,

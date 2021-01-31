@@ -19,7 +19,7 @@ PlayListService.insertPlayLists = async (playlists) => {
 
 PlayListService.getAllPlayList = async () => {
   try {
-    return PlayListModel.find().lean();
+    return PlayListModel.find().sort({ publishedAt: -1 }).lean();
   } catch (error) {
     throw Error(error.message);
   }

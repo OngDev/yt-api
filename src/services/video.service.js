@@ -99,6 +99,7 @@ VideoService.getVideosInPlayList = async (playListId, skip, limit) => {
   if (!playListId) throw Error('Missing "playListId" params');
   try {
     return VideoModel.find({ playlists: { $elemMatch: { playlistId: { $eq: playListId } } } })
+      .sort({ publishedAt: -1 })
       .skip(skip)
       .limit(limit);
   } catch (error) {
@@ -155,7 +156,7 @@ VideoService.getMostViewVideos = async (videoNumber) => {
 VideoService.getVideos = async (skip, limit) => {
   try {
     return VideoModel.find({})
-      .sort({ _id: -1 })
+      .sort({ publishedAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
